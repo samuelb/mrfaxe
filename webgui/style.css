@@ -1,0 +1,291 @@
+body, html
+{
+    margin:             0;
+    margin-bottom:      30px;
+}
+
+body {
+    background-color:   #6688AA;
+    background-image:   url(images/top.gif);
+    background-repeat:  repeat-x;
+    background-attachment: fixed;
+}
+
+body, td, th, div
+{
+    font-family:        verdana, arial, helvetica, geneva, sans-serif;
+    font-size:          1em;
+    color:              black;
+}
+
+#headline
+{
+    position:           fixed;
+    top:                15px;
+    left:               20px;
+    font-size:          35px;
+    font-weight:        bold;
+    margin:             0;
+    color:              black;
+}
+
+.calendar
+{
+    border-collapse:    collapse;
+    background-color:   white;
+    position:           fixed;
+    top:                150px;
+    left:               20px;
+}
+
+.calendar a
+{
+    text-decoration:    none;
+    color:              black;
+    display:            block;
+}
+
+.calendar a img
+{
+    border:             0;
+}
+
+.calendar td, .calendar th
+{
+    border:             1px black solid;
+    empty-cells:        show;
+    text-align:         center;
+}
+
+.calendar thead tr
+{
+    height:             24px;
+}
+
+.calendar thead th
+{
+    background-color:   #FFCCCC;
+    padding:            2px;
+}
+
+.calendar thead .cal_row_month th
+{
+    font-size:          0.9em;
+}
+
+.calendar thead .cal_row_week th
+{
+    width:              24px;
+    font-size:          0.8em;
+    font-weight:        bold;
+}
+
+.calendar tbody td
+{
+    width:              24px;
+    font-size:          0.8em;
+    background-color:   white;
+}
+
+.calendar tbody #now
+{
+    font-weight:        bold;
+    background-color:   lightblue;
+}
+
+.calendar tbody .sat a
+{
+    color:              orange;
+}
+
+.calendar tbody .sun a
+{
+    color:              red;
+}
+
+.search
+{
+    position:           fixed;
+    top:                80px;
+    left:               20px;
+}
+
+.search input, .search button
+{
+    background-color:   white;
+    color:              black;
+    margin:             0;
+}
+
+.search input 
+{
+    border:             1px black solid;
+    border-right:       none;
+    padding-left:       3px;
+    width:              176px;
+}
+
+.search button
+{
+    border:             1px black solid;
+    padding:            0;
+    height:             21px;
+    _height:            20px;
+    position:           relative;
+    top:                1px;
+    _position:          fixed;
+}
+
+.search button img
+{
+    vertical-align:     bottom;
+}
+
+#faxlist
+{
+    border:             none;
+    margin:             80px 20px 150px 248px;
+}
+
+#faxlist table
+{
+    width:              100%;
+    border-collapse:    collapse;
+    border:             1px black solid;
+}
+
+#faxlist th, #faxlist td
+{
+    padding-left:       4px;
+    padding-right:      2px;
+    empty-cells:        show;
+}
+
+#faxlist table thead th
+{
+    text-align:         left;
+    background-color:   white;
+    border-top:         1px black solid;
+    border-bottom:      2px black solid;
+}
+
+#faxlist table tbody td
+{
+    border-top:         1px black solid;
+    border-bottom:      1px black solid;
+    font-size:          0.8em;
+    background-color:   white;
+}
+
+#faxlist table tbody th
+{
+    background-color:   white;
+    padding-top:        20px;
+}
+
+#faxlist table tbody tr.fail td
+{
+    background-color:   #FFCCCC;
+}
+
+#faxlist table tbody tr
+{
+    padding-left:       50px;
+}
+
+#faxlist table tbody tr.ok td
+{
+    background-color:   #CCFFCC;
+}
+
+#faxlist table tbody a img
+{
+    border:             none;
+}
+
+.error
+{
+    border:             2px red solid;
+    margin:             auto;
+    padding:            10px;
+    font-size:          0.8em;
+}
+
+.error h1
+{
+    font-size:          1.5em;
+    margin:             0;
+}
+
+#infobox
+{
+    border:             1px black solid;
+    background-color:   white;
+}
+
+#infobox table td, #infobox table th
+{
+    font-size:          0.8em;
+    padding:            2px 4px 2px 4px;
+}
+
+#infobox table th
+{
+    text-align:         left;
+}
+
+
+#loginbox
+{
+    border-width:           1px 0 1px 0;
+    border-style:           solid;
+    border-color:           black;
+    background-color:       white;
+    text-align:             center;
+    margin-top:             100px;
+    padding:                10px;
+}
+
+#loginbox table td.title
+{
+    text-align:         right;
+    font-size:          0.9em;
+}
+
+#loginbox input 
+{
+    border:             1px gray solid;
+}
+
+#loginbox input.button
+{   
+    border:             1px gray solid;
+    background-color:   white;
+    padding-left:       8px;
+    padding-right:      8px;
+}
+
+#logout
+{
+    position:           absolute;
+    top:                10px;
+    right:              10px;
+}
+
+#logout img
+{
+    border:             0;
+}
+
+#loginerror
+{
+    position:           absolute;
+    top:                -1px;
+    left:               200px;
+    right:               200px;
+    border:             1px red solid;
+    opacity:            0.85;
+    z-index:            5000;
+    padding:            4px 7px 4px 7px;
+    background-color:   #FFCCCC;
+}

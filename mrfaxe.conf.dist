@@ -1,0 +1,15 @@
+stationid = +49 123 45 678
+headline  = Your company name here
+delay     = 0
+tempdir   = /tmp/
+temppref  = faxtmp_
+savedir   = /fax/
+savepref  = fax_
+dbfile    = /fax/mrfaxe.sqlite3
+printing  = yes
+printer   = Faxprinter
+printsrv  = localhost
+papersize = A4
+sfftobmp  = /usr/bin/sfftobmp
+tiff2pdf  = /usr/bin/tiff2pdf
+lp        = /usr/bin/lp

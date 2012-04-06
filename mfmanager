@@ -1,0 +1,301 @@
+#! /usr/bin/env python
+"""\
+Tool to manager MrFaxe Database / Gui Users
+
+Usage: %s [-h|--help] <configfile>
+"""
+
+# SQL query to create/clean the database.
+# See function create_database()
+mfdbSQL = """
+DROP TABLE IF EXISTS Calls;
+DROP TABLE IF EXISTS Users;
+
+VACUUM;
+
+CREATE TABLE Calls (
+    ID        INTEGER PRIMARY KEY,
+    CallDate  DATETIME,
+    CallFrom  VARCHAR(32),
+    StationID VARCHAR(32),
+    CallTo    VARCHAR(32),
+    BitRate   INT(8),
+    HiRes     INT(1),
+    ColorFax  INT(1),
+    Error     VARCHAR(4),
+    ISDNError VARCHAR(4),
+    ProtError VARCHAR(4),
+    FileName  VARCHAR(64)
+);
+
+CREATE TABLE Users (
+    Username  VARCHAR(32),
+    Password  VARCHAR(32)
+);
+"""
+
+# This text will be show when 
+help = """\
+help                Print this help. 
+exit, quit, bye     Exit the program.
+createdb            Create / Clean database.
+listuser            Show a list of GUI users.
+adduser             Add a new GUI user.
+deluser <username>  Delete the user from database.
+chpw <username>     Change users password.
+login               Test the login.\
+"""
+
+
+import sys
+import os
+import mfconfig
+import md5
+import termios
+
+try:
+    import sqlite3
+except ImportError:
+    from pysqlite2 import dbapi2 as sqlite3
+
+
+cwd = os.path.realpath(os.path.dirname(sys.argv[0]))
+
+
+def usage():
+    """ Print the documentation to stdout. """
+    print >> sys.stdout, __doc__ % (sys.argv[0],)
+
+
+def print_help():
+    """ Prints a overview of available commands. """
+    print >> sys.stdout, \
+        "help                Print this help.              \n", \
+        "exit, quit, bye     Exit the program.             \n", \
+        "createdb            Create / Clean database.      \n", \
+        "listuser            Show a list of GUI users.     \n", \
+        "adduser             Add a new GUI user.           \n", \
+        "deluser <username>  Delete the user from database.\n", \
+        "chpw <username>     Change users password.        \n"
+
+
+def yesno(question, default = None):
+    """ Creates a Yes/No question and return the answer as a bool. """
+    # Append the possible answers to the question. Uppercase is the default.
+    if default is True:
+        question += ' (Y/n) '
+    elif default is False:
+        question += ' (y/N) '
+    else:
+        question += ' (y/n) '
+
+    # Repeate question until a right answer are given
+    while (True):
+        answer = raw_input(question)
+        if not answer and type(default).__name__ != 'bool':
+            # No answer given but there is no default answer - repeate question
+            continue
+        elif not answer:
+            return bool(default)
+        elif answer in ('y', 'yes'):
+            return True
+        elif answer in ('n', 'no'):
+            return False
+        else:
+            # Unkown answer - repeate question
+            continue
+
+
+def getpass(prompt = 'Password: '):
+    """ Show a password prompt which hide password typing. """
+    passwd = None
+    # Get old settings from terminal
+    old = termios.tcgetattr(sys.stdin.fileno())
+    new = old[:]
+    new[3] = new[3] & ~termios.ECHO
+    try:
+        # turn off display typed chars
+        termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, new)
+        passwd = raw_input(prompt)
+    finally:
+        # restore old setting
+        termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, old)
+    sys.stdout.write('\n')
+    if passwd[-1] == '\n':
+        return passwd[:-1]
+    return passwd
+
+
+def md5sum(value):
+    """ Shorter md5sum function. Required to add md5 functionality to SQLite. """
+    return md5.md5(str(value)).hexdigest()
+
+
+def adduser(dbcur):
+    """ Add a new user to the database. """
+    username = raw_input('Username: ')
+    dbcur.execute('SELECT 1 FROM Users WHERE lower(Username) = lower(?);', (username,))
+    if dbcur.fetchone():
+        print >> sys.stdout, 'Username allready in database.'
+        return False
+
+    pass1 = getpass('Password: ')
+    pass2 = getpass('Retype password: ')
+    if not pass1 == pass2:
+        print >> sys.stdout, 'The passwords are not the same!'
+        return False
+
+    dbcur.execute('INSERT INTO Users (Username, Password) VALUES(?, md5(?));', (username, pass1))
+    print >> sys.stdout, 'Done.'
+    return True
+
+
+def listuser(dbcur):
+    """ Display a list of all user in database. """
+    count = 0
+    dbcur.execute('SELECT Username FROM Users ORDER BY Username ASC;')
+    for user in dbcur:
+        count += 1
+        print >> sys.stdout, user[0]
+    print >> sys.stdout, count, ' user(s) in database.'
+
+
+def deluser(dbcur, username):
+    """ Delete an users from database. """
+    dbcur.execute('DELETE FROM Users WHERE lower(Username) = lower(?);', (username,))
+    if dbcur.rowcount > 1:
+        print >> sys.stdout, 'Done.'
+    else:
+        print >> sys.stdout, 'Nothing deleted.'
+
+
+def chpw(dbcur, username):
+    """ Update a user password in database. """
+    dbcur.execute('SELECT 1 FROM Users WHERE lower(Username) = lower(?);', (username,))
+    if not dbcur.fetchone():
+        print >> sys.stdout, 'User does not exists in database.'
+        return False
+
+    pass1 = getpass('Password: ')
+    pass2 = getpass('Retype password: ')
+    if not pass1 == pass2:
+        print >> sys.stdout, 'The passwords are not the same!'
+        return False
+
+    dbcur.execute('UPDATE Users SET Password = md5(?) WHERE lower(Username) == lower(?);', (pass1, username))
+    if dbcur.rowcount >= 1:
+        print >> sys.stdout, 'User updated'
+    else:
+        print >> sys.stdout, 'User not updated'
+
+
+def create_database(path, dbcur = False):
+    """ Create a new clean database. """
+    try:
+        if dbcur:
+            dbcur.executescript(mfdbSQL)
+        else:
+            dbcon = sqlite3.connect(path)
+            dbcon.isolation_level = None
+            dbcur = dbcon.cursor()
+            dbcur.executescript(mfdbSQL)
+            dbcur.close()
+            dbcon.commit()
+            dbcon.close()
+    except sqlite3.Error, e:
+        print >> sys.stdout, "Error while creating database"
+        return False
+    return True
+
+
+def main():
+    config_file = None
+    sqlite_file = None
+    db_exists   = False
+
+    if len(sys.argv) <= 1 or sys.argv[1] in ('-h', '--help'):
+        usage()
+        sys.exit()
+
+    config_file = sys.argv[1]
+
+    if not os.path.exists(config_file):
+        print >> sys.stderr, 'Config does not exists!'
+        usage()
+
+    # open config
+    try:
+        cfg = mfconfig.config(config_file)
+    except mfconfig.Error, e:
+        print >> sys.stderr, 'Failed to read config file: ' + str(e)
+        sys.exit(3)
+    
+    sqlite_file = cfg.get('dbfile')
+
+    if not os.path.exists(sqlite_file):
+        print >> sys.stdout, 'The database does not exists.'
+        if yesno('Do you want to create it now?', True):
+            if create_database(sqlite_file):
+                print >> sys.stdout, 'Done.'
+            else:
+                sys.exit(4)
+
+    try:
+        dbcon = sqlite3.connect(sqlite_file)
+        dbcon.isolation_level = None
+        dbcon.create_function('md5', 1, md5sum)
+        dbcur = dbcon.cursor()
+
+        print >> sys.stdout, 'Type "help" to get a list of all available commands.'
+
+        while (True):
+            sys.stdout.write('> ')
+            line = sys.stdin.readline().strip()
+
+            if line.lower() in ('exit', 'quit'):
+                break
+
+            elif line.lower() == 'bye':
+                print >> sys.stdout, 'Bye bye'
+                break
+
+            elif line.lower() == 'help':
+                print_help()
+
+            elif line.lower() == 'createdb':
+                print >> sys.stdout, 'This will delete all existing data in database if it allready exists!'
+                if yesno('Do you really want to continue?', False):
+                    if create_database(sqlite_file, dbcur):
+                        print >> sys.stdout, 'Done.'
+
+            elif line.lower() == 'listuser':
+                listuser(dbcur)
+
+            elif line.lower() == 'adduser':
+                adduser(dbcur)
+
+            elif line.split(' ', 1)[0].lower() == 'deluser':
+                if len(line.split(' ', 1)) <= 1:
+                    print >> sys.stdout, 'Missing username! (Usage: deluser <username>)'
+                else:
+                    deluser(dbcur, line.split(' ', 1)[1])
+
+            elif line.split(' ', 1)[0].lower() == 'chpw':
+                if len(line.split(' ', 1)) <= 1:
+                    print >> sys.stdout, 'Missing username! (Usage: chpw <username>)'
+                else:
+                    chpw(dbcur, line.split(' ', 1)[1])
+
+            else:
+                print >> sys.stdout, 'Unkown: ' + line
+
+    finally:
+        if dbcur:
+            dbcur.close()
+        if dbcon:
+            dbcon.commit()
+            dbcon.close()  
+
+main()
+
+# vim: set expandtab softtabstop=4 tabstop=4 shiftwidth=4:
