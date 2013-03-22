@@ -173,7 +173,7 @@ def chpw(dbcur, username):
     """ Update a user password in database. """
     dbcur.execute('SELECT 1 FROM Users WHERE lower(Username) = lower(?);', (username,))
     if not dbcur.fetchone():
-        print >> sys.stdout, 'User does not exists in database.'
+        print >> sys.stdout, 'User does not exist in database.'
         return False
 
     pass1 = getpass('Password: ')
@@ -219,7 +219,7 @@ def main():
     config_file = sys.argv[1]
 
     if not os.path.exists(config_file):
-        print >> sys.stderr, 'Config does not exists!'
+        print >> sys.stderr, 'Config does not exist!'
         usage()
 
     # open config
@@ -232,7 +232,7 @@ def main():
     sqlite_file = cfg.get('dbfile')
 
     if not os.path.exists(sqlite_file):
-        print >> sys.stdout, 'The database does not exists.'
+        print >> sys.stdout, 'The database does not exist.'
         if yesno('Do you want to create it now?', True):
             if create_database(sqlite_file):
                 print >> sys.stdout, 'Done.'
@@ -262,7 +262,7 @@ def main():
                 print_help()
 
             elif line.lower() == 'createdb':
-                print >> sys.stdout, 'This will delete all existing data in database if it allready exists!'
+                print >> sys.stdout, 'This will delete all existing data in database if it allready exist!'
                 if yesno('Do you really want to continue?', False):
                     if create_database(sqlite_file, dbcur):
                         print >> sys.stdout, 'Done.'
