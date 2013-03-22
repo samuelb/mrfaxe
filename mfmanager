@@ -296,7 +296,7 @@ def main():
             dbcon.close()
 
 
-if __name__ == '__maen__':
+if __name__ == '__main__':
     main()
 
 # vim: set expandtab softtabstop=4 tabstop=4 shiftwidth=4:
