@@ -17,35 +17,38 @@ except ImportError:
     from pysqlite2 import dbapi2 as sqlite3
 
 
-ERROR_UNKOWN  = 2
+ERROR_UNKOWN = 2
 ERROR_RECEIVE = 4
 ERROR_CONVERT = 8
 ERROR_ARCHIVE = 16
-ERROR_PRINT   = 32
+ERROR_PRINT = 32
 
 
 class receiveError(Exception):
     pass
 
+
 class convertError(Exception):
     pass
 
+
 class archiveError(Exception):
     pass
+
 
 class printError(Exception):
     pass
 
 
 def callIncoming(call, service, fax_caller, fax_callee):
-    timenow        = time.localtime()
-    fax_stationid  = ''
-    fax_bitrate    = ''
+    timenow = time.localtime()
+    fax_stationid = ''
+    fax_bitrate = ''
     fax_resolution = ''
-    fax_color      = ''
-    fax_error      = (-1, -1)
-    fax_pdffile    = ''
-    error          = 0
+    fax_color = ''
+    fax_error = (-1, -1)
+    fax_pdffile = ''
+    error = 0
 
     # open config
     try:
@@ -57,8 +60,9 @@ def callIncoming(call, service, fax_caller, fax_callee):
 
     # chek if all needed config settings are set
     miss = cfg.exists(('stationid', 'headline', 'delay', 'tempdir',
-        'temppref', 'savedir', 'savepref', 'dbfile', 'printing', 'printer',
-        'printsrv', 'papersize', 'sfftobmp', 'tiff2pdf', 'lp'))
+                       'temppref', 'savedir', 'savepref', 'dbfile', 'printing',
+                       'printer', 'printsrv', 'papersize', 'sfftobmp',
+                       'tiff2pdf', 'lp'))
     if not miss is None:
         capisuite.error('Missing settings in config' + str(miss))
         capisuite.reject(call, 0x34A9)
@@ -68,13 +72,13 @@ def callIncoming(call, service, fax_caller, fax_callee):
     # ceck if if the external tools exists
     try:
         if not os.path.exists(cfg.get('sfftobmp')):
-            raise Exception, cfg.get('sfftobmp')
+            raise Exception(cfg.get('sfftobmp'))
         if not os.path.exists(cfg.get('tiff2pdf')):
-            raise Exception, cfg.get('tiff2pdf')
+            raise Exception(cfg.get('tiff2pdf'))
         if not os.path.exists(cfg.get('lp')) and cfg.getbool('printing'):
-            raise Exception,cfg.get('lp')
+            raise Exception(cfg.get('lp'))
     except Exception, e:
-        capisuite.error(str(e) +' missing but needed')
+        capisuite.error(str(e) + ' missing but needed')
         capisuite.reject(call, 0x34A9)
         return
 
@@ -107,7 +111,7 @@ def callIncoming(call, service, fax_caller, fax_callee):
         try:
             (fax_stationid, fax_bitrate, fax_resolution, fax_color) = capisuite.connect_faxG3(
                 call, cfg.get('stationid'), cfg.get('headline'), cfg.getint('delay'))
-            
+
             capisuite.fax_receive(call, fax_tempsff)
         except:
             fax_error = capisuite.disconnect(call)
@@ -115,10 +119,10 @@ def callIncoming(call, service, fax_caller, fax_callee):
 
         # check if the received fax really exists
         if not os.path.exists(fax_tempsff):
-            raise receiveError, 'No sff file found. (ISDN=0x%X, Protocol=0x%X)' % fax_error
+            raise receiveError('No sff file found. (ISDN=0x%X, Protocol=0x%X)' % fax_error)
         elif not os.path.getsize(fax_tempsff) > 0:
-            raise receiveError, 'Received sff file is empty'
-        
+            raise receiveError('Received sff file is empty')
+
         # Faxe von ZF kommen mit einem Fehler, aber werden scheinbar komplett uebertragen.
         # Pruefung ab das Fax tatsaechlich angekommen ist, geschiet jediglich ueber das bestehen der .sff-Datei
         #if not fax_error in ((0x3400, 0x0), (0x3480, 0x0), (0x3490, 0x0), (0x3490, 0x3314)):
@@ -127,20 +131,20 @@ def callIncoming(call, service, fax_caller, fax_callee):
         # convert the fax
         try:
             if os.system('%s -tif %s -o %s' % (cfg.get('sfftobmp'), fax_tempsff, fax_temptif)) > 0:
-                raise convertError, 'Failed to convert the .sff to .tif.'
-            if os.system('%s -p%s -f -o %s %s' %(cfg.get('tiff2pdf'), cfg.get('papersize'), fax_pdffile, fax_temptif)) > 0:
-                raise convertError, 'Failed to convert the .tif to .pdf.'
+                raise convertError('Failed to convert the .sff to .tif.')
+            if os.system('%s -p%s -f -o %s %s' % (cfg.get('tiff2pdf'), cfg.get('papersize'), fax_pdffile, fax_temptif)) > 0:
+                raise convertError('Failed to convert the .tif to .pdf.')
         except OSError, e:
-            raise convertError, e
+            raise convertError(str(e))
 
         # print the pdf
         if cfg.getbool('printing'):
             try:
                 if os.system('%s -h %s -d %s %s' % (cfg.get('lp'), cfg.get('printsrv'), cfg.get('printer'), fax_pdffile)) > 0:
-                    raise printError, 'LP Error'
+                    raise printError('LP Error')
             except OSError, e:
-                raise printError, e;
-                
+                raise printError(str(e))
+
     except sqlite3.Error, e:
         capisuite.error('Database error: ' + str(e))
         capisuite.reject(call, 0x34A9)
@@ -207,6 +211,5 @@ def callIncoming(call, service, fax_caller, fax_callee):
 
     return
 # end callIncoming()
-
 
 # vim: set expandtab softtabstop=4 tabstop=4 shiftwidth=4:

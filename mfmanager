@@ -34,9 +34,9 @@ CREATE TABLE Users (
 );
 """
 
-# This text will be show when 
+# This text will be show when
 help = """\
-help                Print this help. 
+help                Print this help.
 exit, quit, bye     Exit the program.
 createdb            Create / Clean database.
 listuser            Show a list of GUI users.
@@ -79,7 +79,7 @@ def print_help():
         "chpw <username>     Change users password.        \n"
 
 
-def yesno(question, default = None):
+def yesno(question, default=None):
     """ Creates a Yes/No question and return the answer as a bool. """
     # Append the possible answers to the question. Uppercase is the default.
     if default is True:
@@ -106,7 +106,7 @@ def yesno(question, default = None):
             continue
 
 
-def getpass(prompt = 'Password: '):
+def getpass(prompt='Password: '):
     """ Show a password prompt which hide password typing. """
     passwd = None
     # Get old settings from terminal
@@ -189,7 +189,7 @@ def chpw(dbcur, username):
         print >> sys.stdout, 'User not updated'
 
 
-def create_database(path, dbcur = False):
+def create_database(path, dbcur=False):
     """ Create a new clean database. """
     try:
         if dbcur:
@@ -202,7 +202,7 @@ def create_database(path, dbcur = False):
             dbcur.close()
             dbcon.commit()
             dbcon.close()
-    except sqlite3.Error, e:
+    except sqlite3.Error:
         print >> sys.stdout, "Error while creating database"
         return False
     return True
@@ -211,7 +211,6 @@ def create_database(path, dbcur = False):
 def main():
     config_file = None
     sqlite_file = None
-    db_exists   = False
 
     if len(sys.argv) <= 1 or sys.argv[1] in ('-h', '--help'):
         usage()
@@ -229,7 +228,7 @@ def main():
     except mfconfig.Error, e:
         print >> sys.stderr, 'Failed to read config file: ' + str(e)
         sys.exit(3)
-    
+
     sqlite_file = cfg.get('dbfile')
 
     if not os.path.exists(sqlite_file):
@@ -294,8 +293,10 @@ def main():
             dbcur.close()
         if dbcon:
             dbcon.commit()
-            dbcon.close()  
+            dbcon.close()
 
-main()
+
+if __name__ == '__maen__':
+    main()
 
 # vim: set expandtab softtabstop=4 tabstop=4 shiftwidth=4:

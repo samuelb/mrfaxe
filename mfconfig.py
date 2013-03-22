@@ -1,11 +1,14 @@
 class Error(Exception):
     pass
 
+
 class OptionError(Error):
     pass
 
+
 class ReadError(Error):
     pass
+
 
 class config:
     def __init__(self, path):
@@ -17,14 +20,14 @@ class config:
         try:
             fp = open(self._path)
         except IOError, e:
-            raise ReadError, str(e)
+            raise ReadError(str(e))
         while True:
             line = fp.readline()
             if not line:
-                break;
+                break
             # remove blanks and breaks
             line = line.strip()
-            # check for comments 
+            # check for comments
             if line == '' or line[0] in '#;' or line[0:2] == '//':
                 continue
             (option, value) = line.split('=', 1)
@@ -34,7 +37,7 @@ class config:
         try:
             return self._data[option]
         except (NameError, KeyError):
-            raise OptionError, 'Unkown option "' + option + '"'
+            raise OptionError('Unkown option "' + option + '"')
 
     def getint(self, option):
         return int(self.get(option))
