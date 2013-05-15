@@ -50,7 +50,7 @@ login               Test the login.\
 import sys
 import os
 import mfconfig
-import md5
+import hashlib
 import termios
 
 try:
@@ -128,7 +128,7 @@ def getpass(prompt='Password: '):
 
 def md5sum(value):
     """ Shorter md5sum function. Required to add md5 functionality to SQLite. """
-    return md5.md5(str(value)).hexdigest()
+    return hashlib.md5(str(value)).hexdigest()
 
 
 def adduser(dbcur):
