@@ -49,7 +49,7 @@ try {
     die();
 }
 
-if ($cfg['auth'])
+if ($cfg['dbauth'])
 {
 
     if (isset($_REQUEST['logout']))
