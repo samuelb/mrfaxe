@@ -13,3 +13,4 @@ papersize = A4
 sfftobmp  = /usr/bin/sfftobmp
 tiff2pdf  = /usr/bin/tiff2pdf
 lp        = /usr/bin/lp
+auth      = true
